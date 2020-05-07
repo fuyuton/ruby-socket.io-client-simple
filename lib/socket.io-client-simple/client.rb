@@ -53,7 +53,11 @@ module SocketIO
           rescue Errno::ECONNREFUSED => e
             @state = :disconnect
             @reconnecting = false
-            reconnect
+            return
+          rescue => e
+            puts e.message
+            @state = :disconnect
+            @reconnecting = false
             return
           end
           @reconnecting = false
@@ -64,7 +68,7 @@ module SocketIO
             if err.kind_of? Errno::ECONNRESET and this.state == :connect
               this.state = :disconnect
               this.__emit :disconnect
-              this.reconnect
+              #this.reconnect
               next
             end
             this.__emit :error, err
@@ -90,7 +94,6 @@ module SocketIO
               this.websocket.close if this.websocket.open?
               this.state = :disconnect
               this.__emit :disconnect
-              reconnect
             when 42  ## data
               data = JSON.parse body rescue next
               event_name = data.shift
