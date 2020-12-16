@@ -134,6 +134,10 @@ module SocketIO
           @state = :disconnect
         end
 
+        def error(data)
+          puts "#{Time.now} socket error: #{data}"
+        end
+
       end
 
     end
