@@ -34,6 +34,12 @@ module SocketIO
                 end
                 if @websocket.open? and Time.now.to_i - @last_pong_at > (@ping_timeout+@ping_interval)/1000
                   @websocket.close
+                  #@state = :disconnect
+                  #__emit :disconnect
+                  #reconnect
+                end
+                if @websocket.close?
+                  @recconecting = false
                   @state = :disconnect
                   __emit :disconnect
                   reconnect
@@ -68,7 +74,6 @@ module SocketIO
             if err.kind_of? Errno::ECONNRESET and this.state == :connect
               this.state = :disconnect
               this.__emit :disconnect
-              #this.reconnect
               next
             end
             this.__emit :error, err
@@ -92,15 +97,14 @@ module SocketIO
               this.last_pong_at = Time.now.to_i
             when 41  ## disconnect from server
               this.websocket.close if this.websocket.open?
-              this.state = :disconnect
-              this.__emit :disconnect
+              #this.state = :disconnect
+              #this.__emit :disconnect
             when 42  ## data
               data = JSON.parse body rescue next
               event_name = data.shift
               this.__emit event_name, *data
             end
           end
-          p @websocket.message
 
           return self
         end
