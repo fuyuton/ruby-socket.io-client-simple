@@ -56,6 +56,7 @@ module SocketIO
           query = URI.encode_www_form(@opts)
           begin
             @websocket = WebSocket::Client::Simple.connect "#{@url}/socket.io/?#{query}"
+            @state = :connect
           rescue Errno::ECONNREFUSED => e
             @state = :disconnect
             @reconnecting = false
@@ -112,6 +113,7 @@ module SocketIO
         def reconnect
           return unless @auto_reconnection
           return if @reconnecting
+          puts "reconnecting..."
           @reconnecting = true
           sleep rand(5) + 5
           connect
